@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <title>传智云购-购物车</title>
+    <link type="image/x-icon" rel="shortcut icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="res/mui/css/mui.min.css" />
+    <link rel="stylesheet" href="res/fontAwesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/cart.css" />
+    <style>
+            .cz_container {
+                padding-top: 0;
+                padding-bottom: 0;
+                top: 45px;
+                bottom: 80px;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="cz_layout">
+        <header class="cz_topBar">
+            <a href="javascript:history.back();" class="icon_back fa fa-arrow-left"></a>
+            <span class="title">购物车</span>
+            <a href="javascript:;" class="icon_refresh fa fa-refresh"></a>
+        </header>
+        <div class="cz_container mui-content mui-scroll-wrapper">
+            <div class="mui-scroll">
+                <ul class="mui-table-view mui-table-view-chevron" id="cart">
+                    <!-- 模板引擎填入 -->
+                </ul>
+            </div>
+            <div class="cart_order">订单总额：&yen;1022.00 <a href="#">生成订单</a></div>
+        </div>
+        <footer class="cz_tabs">
+            <a class="tab_home fa fa-home" href="index.html"><span>首页</span></a>
+            <a class="tab_cate fa fa-bars" href="cate.html"><span>分类</span></a>
+            <a class="tab_cart fa fa-shopping-cart now" href="cart.html"><span>购物车</span></a>
+            <a class="tab_user fa fa-user" href="user/index.html"><span>会员中心</span></a>
+        </footer>
+    </div>
+    <script src="res/mui/js/mui.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/template-web.js"></script>
+
+    <!-- 自定义模板 -->
+    <script type="text/template" id="tpl">
+        {{each data val}}
+        <li data-product="" class="mui-table-view-cell">
+            <div class="mui-slider-right mui-disabled">
+                <a class="mui-btn mui-btn-blue">编辑</a>
+                <a class="mui-btn mui-btn-red" data-id="{{val.id}}" id="btn_del">删除</a>
+            </div>
+            <a href="javascript:;" class="mui-navigate-right mui-slider-handle">
+                <img class="mui-media-object mui-pull-left" src="/api{{val.pic[0].picAddr}}">
+                <div class="mui-media-body">
+                    <p class="name">{{val.proName}}</p>
+                    <p class="info">
+                        <span class="price">&yen;{{val.price}}</span>
+                        <span class="oldPrice">&yen;{{val.oldPrice}}</span>
+                        <span class="number">x{{val.num}}</span>
+                    </p>
+                    <p><span class="size">鞋码：{{val.size}}</span></p>
+                </div>
+                <input type="checkbox" />
+            </a>
+        </li>
+        {{/each}}
+    </script>
+
+    <script>
+        // 初始化变量
+        var page = 1;
+        var pageSize = 5;
+
+       
+        mui(function () {
+            mui.init({
+                pullRefresh : {
+                    container: ".cz_container",
+                    down: {
+                        height: 50,
+                        auto: true,
+                        contentdown: "下拉可以刷新",
+                        contentover: "释放立即刷新",
+                        contentrefresh: "正在刷新...",
+                        callback: function () {
+                            $.ajax({
+                                url: '/api/cart/queryCartPaging',
+                                type: 'get',
+                                data: {
+                                    // 刷新永远为第1页
+                                    page: 1,
+                                    pageSize: pageSize
+                                },
+                                success: function (info) {
+                                    // console.log(info);
+                                    // 调用模板引擎
+                                    var html = template('tpl', info);
+                                    // 添加DOM
+                                    $('#cart').html(html);
+                                    
+                                    // 当请求完成时需要手动
+                                    // 终止请求（官方文档有误）
+                                    mui('.cz_container').pullRefresh().endPulldownToRefresh();
+
+                                    // 下拉刷新后将页码重置为1
+                                    page = 1;
+                                    mui('.cz_container').pullRefresh().enablePullupToRefresh();
+                                }
+                            });
+                        }
+                    },
+                    up: {
+                        height: 50,
+                        auto: false,
+                        contentrefresh: "正在加载...",
+                        contentnomore: '没有更多数据了',
+                        callback: function () {
+                            page++;
+                            // 发送请求请求更多数据
+                            $.ajax({
+                                url: '/api/cart/queryCartPaging',
+                                type: 'get',
+                                data: {
+                                    page: page,
+                                    pageSize: pageSize
+                                },
+                                success: function (info) {
+                                    console.log(info);
+                                    // 终止上拉交互
+                                    if(info.length == 0) {
+                                        mui('.cz_container').pullRefresh().endPullupToRefresh(true);
+                                        return;
+                                    }
+
+                                    // 调用模板引擎
+                                    var html = template('tpl', info);
+                                    // 一定追加
+                                    $('#cart').append(html);
+
+                                    // 手动终止请求
+                                    mui('.cz_container').pullRefresh().endPullupToRefresh();
+                                }
+                            })
+                        }
+                    }
+                }
+            });
+        });
+    
+         // 点击删除,将添加的该商品删除
+         $('.mui-btn-red').on('click','#btn_del',function () {
+            // 获取购物车的id号
+            var carId = $(this).attr('data-id');
+            // 保存this指向
+            var _this = $(this);
+            // console.log(_this);
+            // 发送ajax请求
+            $.ajax({
+                url: '/api/cart/deleteCart',
+                type: 'get',
+                data: {id: carId},
+                success: function (info) {
+                    console.log(info);
+                    //处理获取到后端数据的业务逻辑
+                    if (info.success) {
+                        _this.parents('li').remove();
+                    }
+                }
+            })
+        })
+        
+    </script>
+</body>
+
+</html>

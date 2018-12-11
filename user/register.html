@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" />
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <title>注册</title>
+    <link type="image/x-icon" rel="shortcut icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../res/mui/css/mui.min.css" />
+    <link rel="stylesheet" href="../res/fontAwesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/user.css" />
+</head>
+
+<body>
+    <div class="cz_layout">
+        <header class="cz_topBar">
+            <a href="javascript:history.back();" class="icon_back fa fa-arrow-left"></a>
+            <span class="title">注册</span>
+        </header>
+        <div class="cz_container">
+            <form action="">
+                <div class="form_box">
+                    <div class="mui-input-row">
+                        <input name="username" type="text" placeholder="用户名">
+                    </div>
+                    <div class="mui-input-row">
+                            <input name="mobile" type="text" placeholder="手机号">
+                        </div>
+                    <div class="mui-input-row">
+                        <input name="password" type="password" placeholder="密码" class="mui-input-password">
+                        <span class="mui-icon mui-icon-eye"></span>
+                    </div>
+                    <div class="mui-input-row">
+                        <input type="password" placeholder="确认密码" class="mui-input-password">
+                        <span class="mui-icon mui-icon-eye"></span>
+                    </div>
+                    <div class="mui-input-row">
+                        <input name="vCode" type="text" placeholder="认证码">
+                        <a href="javascript:;" class="btn_getCode mui-btn mui-btn-primary">获取认证码</a>
+                    </div>
+                    <input type="submit" class="mui-btn mui-btn-primary btn_login" value="注册">
+                    <div class="mui-input-row cz_text">
+                        <input type="checkbox" checked /> 我同意《会员服务协议》
+                        <a href="login.html">立即登录</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <footer class="cz_tabs">
+            <a class="tab_home fa fa-home" href="../index.html"><span>首页</span></a>
+            <a class="tab_cate fa fa-bars" href="../cate.html"><span>分类</span></a>
+            <a class="tab_cart fa fa-shopping-cart" href="../cart.html"><span>购物车</span></a>
+            <a class="tab_user fa fa-user" href="../user/index.html"><span>会员中心</span></a>
+        </footer>
+    </div>
+    <script src="../res/mui/js/mui.min.js"></script>
+    <script src="../js/jquery.min.js"></script>
+
+    <script>
+        // 点击注册按钮
+        $('form').on('submit', function () {
+            // 获取表单数据
+            // serialize 自动忽略没有带 name 属性的表单
+            var data = $(this).serialize();
+            // 发送ajax请求
+            $.ajax({
+                url: '/api/user/register',
+                type: 'post',
+                data: data,
+                success: function (info) {
+                    // console.log(info);
+                    // 处理注册后的逻辑
+                    if (info.success) {
+                        location.href = '/user/login.html';
+                        return;
+                    }
+                    alert(info.message);
+                }
+            })
+            // 阻止表单默认跳转
+            return false;
+    });
+
+    // 获取认证码
+    // 点击获取认证码按钮
+    $('.btn_getCode').on('click',function () {
+        // 将用户手机号发送给后端
+        $.ajax({
+            url: '/api/user/vCode',
+            type: 'get',
+            success: function (info) {
+                // console.log(info);
+            }
+        })
+    })
+    </script>
+</body>
+
+</html>

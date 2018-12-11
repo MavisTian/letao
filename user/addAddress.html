@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>收货地址管理</title>
+    <link type="image/x-icon" rel="shortcut icon" href="../images/favicon.ico">
+    <link rel="stylesheet" href="../res/mui/css/mui.min.css" />
+    <link rel="stylesheet" href="../res/fontAwesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="../css/common.css" />
+    <link rel="stylesheet" href="../css/user.css" />
+</head>
+
+<body>
+    <div class="cz_layout bgg">
+        <header class="cz_topBar">
+            <a href="javascript:history.back();" class="icon_back fa fa-arrow-left"></a>
+            <span class="title">收货地址管理</span>
+        </header>
+        <div class="cz_container">
+            <form action="">
+                <div class="form_box">
+                    <div class="mui-input-row">
+                        <input name="recipients" type="text" placeholder="收货人">
+                    </div>
+                    <div class="mui-input-row">
+                        <input name="postcode" type="text" placeholder="邮编">
+                    </div>
+                    <div class="mui-input-row hometown">
+                        <select id="a" data-id="130000"></select>
+                        <select id="b" data-id="130700"></select>
+                        <select id="c" data-id="130728"></select>
+                    </div>
+                    <div class="mui-input-row">
+                        <textarea name="addressDetail" id="textarea" rows="5" placeholder="多行文本框"></textarea>
+                    </div>
+                    <input type="submit" class="mui-btn mui-btn-primary btn_login" value="确认">
+                </div>
+            </form>
+        </div>
+        <footer class="cz_tabs">
+            <a class="tab_home fa fa-home" href="../index.html"><span>首页</span></a>
+            <a class="tab_cate fa fa-bars" href="../cate.html"><span>分类</span></a>
+            <a class="tab_cart fa fa-shopping-cart" href="../cart.html"><span>购物车</span></a>
+            <a class="tab_user fa fa-user" href="../user/index.html"><span>会员中心</span></a>
+        </footer>
+    </div>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../res/mui/js/mui.min.js"></script>
+    <!-- 引用省市县的插件 -->
+    <script src="../js/jquery.region.js"></script>
+
+    <script>
+        $('form').on('submit',function () {
+            // 获取表单数据
+            var data = $(this).serialize();
+            // 获取下拉框数据
+            var s = $('#a option:selected').text();
+            var h = $('#b option:selected').text();
+            var x = $('#c option:selected').text();
+            // 拼接省市县
+            data += '&address=' + s + h + x;
+
+            // 发送ajax请求
+            $.ajax({
+                url: '/api/address/addAddress',
+                type: 'post',
+                data: data,
+                success: function (info) {
+                    if (info.success) {
+                        location.href = '/user/address.html';
+                        return;
+                    }
+                }
+            })
+            // 阻止表单默认跳转
+            return false;
+        })
+
+        // 调用省市县插件
+        $('.hometown').region({
+            url: '/js/region.json'
+        })
+    </script>
+</body>
+
+</html>
